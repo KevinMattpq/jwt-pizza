@@ -6,21 +6,21 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 
 | User activity                                       | Frontend component | Backend endpoints | Database SQL |
 | --------------------------------------------------- | ------------------ | ----------------- | ------------ |
-| View home page                                      |                    |                   |              |
-| Register new user<br/>(t@jwt.com, pw: test)         |                    |                   |              |
-| Login new user<br/>(t@jwt.com, pw: test)            |                    |                   |              |
-| Order pizza                                         |                    |                   |              |
-| Verify pizza                                        |                    |                   |              |
-| View profile page                                   |                    |                   |              |
-| View franchise<br/>(as diner)                       |                    |                   |              |
-| Logout                                              |                    |                   |              |
-| View About page                                     |                    |                   |              |
-| View History page                                   |                    |                   |              |
-| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |                    |                   |              |
-| View franchise<br/>(as franchisee)                  |                    |                   |              |
-| Create a store                                      |                    |                   |              |
-| Close a store                                       |                    |                   |              |
-| Login as admin<br/>(a@jwt.com, pw: admin)           |                    |                   |              |
-| View Admin page                                     |                    |                   |              |
-| Create a franchise for t@jwt.com                    |                    |                   |              |
-| Close the franchise for t@jwt.com                   |                    |                   |              |
+| View home page                                      |home.tsx            |none               |none          |
+| Register new user<br/>(t@jwt.com, pw: test)         |register.tsx        |[POST] /api/auth   |              |
+| Login new user<br/>(t@jwt.com, pw: test)            |login.tsx           |[PUT] /api/auth    |              |
+| Order pizza                                         |menu.tsx            |[POST] /api/order  |              |
+| Verify pizza                                        |delivery.tsx        |                   |none          |
+| View profile page                                   |dinnerDashboard.tsx |none               |none          |
+| View franchise<br/>(as diner)                       |franchiseDashboard.tsx|                 |              |
+| Logout                                              |logout.tsx          |[DELETE] /api/auth |              |
+| View About page                                     |about.tsx           |none               |none          |
+| View History page                                   |history.tsx         |none               |none          |
+| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |login.tsx           |[PUT] /api/auth    |              |
+| View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|[GET] /api/franchise/:userId |  |
+| Create a store                                      |createStore.tsx     |[POST] /api/franchise/:franchiseId/store|  |
+| Close a store                                       |closeStore.tsx      |[DELETE] /api/franchise/:franchiseId/store/:storeId||
+| Login as admin<br/>(a@jwt.com, pw: admin)           |login.tsx           |[PUT] /api/auth    |              |
+| View Admin page                                     |adminDashboard.tsx  |none               |none          |
+| Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST] /api/franchise/:franchiseId/store|  |
+| Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELETE] /api/franchise/:franchiseId|      |
