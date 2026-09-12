@@ -12,15 +12,15 @@ As part of `Deliverable ⓵ Development deployment: JWT Pizza`, start up the app
 | Order pizza                                         |menu.tsx/payment.tsx|[POST] /api/order|`INSERT INTO dinerOrder (dinerId, franchiseId, storeId, date) VALUES (?, ?, ?, now())` <br> `INSERT INTO orderItem (orderId, menuId, description, price) VALUES (?, ?, ?, ?)`|
 | Verify pizza                                        |delivery.tsx        |[POST]https://pizza-factory.cs329.click/api/order/verify|none |none|
 | View profile page                                   |dinnerDashboard.tsx |[GET] /api/user/me |`SELECT userId FROM auth WHERE token=?`|
-| View franchise<br/>(as diner)                       |franchiseDashboard.tsx|[GET] api/franchise/4|`SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?` <br> `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`|
+| View franchise<br/>(as diner)                       |franchiseDashboard.tsx|[GET] api/franchise/:userId|`SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?` <br> `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`|
 | Logout                                              |logout.tsx          |[DELETE] /api/auth |`DELETE FROM auth WHERE token=?`|
 | View About page                                     |about.tsx           |none               |none          |
 | View History page                                   |history.tsx         |none               |none          |
-| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |login.tsx           |[PUT] /api/auth    |              |
-| View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|[GET] /api/franchise/:userId |  |
-| Create a store                                      |createStore.tsx     |[POST] /api/franchise/:franchiseId/store|  |
-| Close a store                                       |closeStore.tsx      |[DELETE] /api/franchise/:franchiseId/store/:storeId||
-| Login as admin<br/>(a@jwt.com, pw: admin)           |login.tsx           |[PUT] /api/auth    |              |
+| Login as franchisee<br/>(f@jwt.com, pw: franchisee) |login.tsx           |[PUT] /api/auth    |`SELECT * FROM user WHERE email=?` <br> `SELECT * FROM userRole WHERE userId=?`|
+| View franchise<br/>(as franchisee)                  |franchiseDashboard.tsx|[GET] /api/franchise/:userId |`SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?`<br>`SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`|
+| Create a store                                      |createStore.tsx     |[POST] /api/franchise/:franchiseId/store|`INSERT INTO store (franchiseId, name) VALUES (?, ?)`|
+| Close a store                                       |closeStore.tsx      |[DELETE] /api/franchise/:franchiseId/store/:storeId|`DELETE FROM store WHERE franchiseId=? AND id=?`|
+| Login as admin<br/>(a@jwt.com, pw: admin)           |login.tsx           |[PUT] /api/auth    |`SELECT * FROM user WHERE email=?` <br> `SELECT * FROM userRole WHERE userId=?`|
 | View Admin page                                     |adminDashboard.tsx  |none               |none          |
 | Create a franchise for t@jwt.com                    |createFranchise.tsx |[POST] /api/franchise/:franchiseId/store|  |
 | Close the franchise for t@jwt.com                   |closeFranchise.tsx  |[DELETE] /api/franchise/:franchiseId|      |
