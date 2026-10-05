@@ -1,7 +1,18 @@
-**/node_modules
-**/.DS_Store
+# General / Environment
+node_modules
+.DS_Store
 cookies.txt
 config.js
-coverage
 dist
-**/.vite
+.vite
+
+# Playwright & Testing
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Coverage
+coverage
+.nyc_output
