@@ -35,7 +35,10 @@ async function basicInit(page: Page) {
     if (method === "POST") {
       const registerReq = route.request().postDataJSON();
       if (validUsers[registerReq.email]) {
-        await route.fulfill({ status: 409, json: { message: "email already registered" } });
+        await route.fulfill({
+          status: 409,
+          json: { message: "email already registered" },
+        });
         return;
       }
       const newUser: User = {
@@ -109,7 +112,7 @@ async function basicInit(page: Page) {
     { id: 3, name: "PizzaCorp", stores: [{ id: 7, name: "Spanish Fork" }] },
     { id: 4, name: "topSpot", stores: [] },
   ];
-  
+
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
     const method = route.request().method();
 
@@ -124,30 +127,47 @@ async function basicInit(page: Page) {
 
     expect(method).toBe("GET");
     const params = new URL(route.request().url()).searchParams;
-    const nameFilter = (params.get("name") ?? "*").replace(/\*/g, "").toLowerCase();
-    const matching = franchises.filter((f) => f.name.toLowerCase().includes(nameFilter));
+    const nameFilter = (params.get("name") ?? "*")
+      .replace(/\*/g, "")
+      .toLowerCase();
+    const matching = franchises.filter((f) =>
+      f.name.toLowerCase().includes(nameFilter)
+    );
     // Pretend there is always a second page after page 0
     const more = params.get("page") === "0";
     await route.fulfill({ json: { franchises: matching, more } });
   });
 
-    // List users (admin)
-    await page.route(/\/api\/user(\?.*)?$/, async (route) => {
-      expect(route.request().method()).toBe("GET");
-      const params = new URL(route.request().url()).searchParams;
-      const nameFilter = (params.get("name") ?? "*").replace(/\*/g, "").toLowerCase();
-      const page = Number(params.get("page") ?? 1);
-      const limit = Number(params.get("limit") ?? 10);
-  
-      const matching = Object.values(validUsers)
-        .filter((u) => (u.name ?? "").toLowerCase().includes(nameFilter))
-        .map(({ password, ...user }) => user); // never send passwords back
-  
-      const users = matching.slice((page - 1) * limit, page * limit);
-      const more = matching.length > page * limit;
-      await route.fulfill({ json: { users, more } });
-    });
-  
+  // List users (admin)
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    expect(route.request().method()).toBe("GET");
+    const params = new URL(route.request().url()).searchParams;
+    const nameFilter = (params.get("name") ?? "*")
+      .replace(/\*/g, "")
+      .toLowerCase();
+    const page = Number(params.get("page") ?? 1);
+    const limit = Number(params.get("limit") ?? 10);
+
+    const matching = Object.values(validUsers)
+      .filter((u) => (u.name ?? "").toLowerCase().includes(nameFilter))
+      .map(({ password, ...user }) => user); // never send passwords back
+
+    const users = matching.slice((page - 1) * limit, page * limit);
+    const more = matching.length > page * limit;
+    await route.fulfill({ json: { users, more } });
+  });
+
+  // Delete user (admin)
+  await page.route(/\/api\/user\/\d+$/, async (route) => {
+    expect(route.request().method()).toBe("DELETE");
+    const id = route.request().url().split("/").pop();
+    const email = Object.keys(validUsers).find(
+      (key) => validUsers[key].id === id
+    );
+    if (email) delete validUsers[email];
+    await route.fulfill({ json: { message: "user deleted" } });
+  });
+
   const orders: any[] = [
     {
       id: 1,
@@ -164,7 +184,9 @@ async function basicInit(page: Page) {
   await page.route("*/**/api/order", async (route) => {
     // Order history
     if (route.request().method() === "GET") {
-      await route.fulfill({ json: { dinerId: loggedInUser?.id, orders, page: 1 } });
+      await route.fulfill({
+        json: { dinerId: loggedInUser?.id, orders, page: 1 },
+      });
       return;
     }
 
@@ -250,7 +272,12 @@ async function basicInit(page: Page) {
       await route.fulfill({ status: 401, json: { message: "invalid" } });
       return;
     }
-    await route.fulfill({ json: { message: "valid", payload: { vendor: { id: "kp" }, order: { id: 23 } } } });
+    await route.fulfill({
+      json: {
+        message: "valid",
+        payload: { vendor: { id: "kp" }, order: { id: 23 } },
+      },
+    });
   });
 
   await page.goto("/");
@@ -349,7 +376,11 @@ test("Creating and closing a store", async ({ page }) => {
   await expect(page.getByRole("cell", { name: "Orem" })).toBeVisible();
 
   // Close the store
-  await page.getByRole("row").filter({ hasText: "Orem" }).getByRole("button", { name: "Close" }).click();
+  await page
+    .getByRole("row")
+    .filter({ hasText: "Orem" })
+    .getByRole("button", { name: "Close" })
+    .click();
   await expect(page.getByText("Sorry to see you go")).toBeVisible();
   await expect(page.getByText("Orem")).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
@@ -376,7 +407,7 @@ test("Navigating as admin", async ({ page }) => {
   ).toBeVisible();
 });
 
-test('Create and Close Franchise', async ({ page }) => {
+test("Create and Close Franchise", async ({ page }) => {
   await basicInit(page);
 
   // Log in as admin and open the admin dashboard
@@ -409,10 +440,17 @@ test('Create and Close Franchise', async ({ page }) => {
 test("About page", async ({ page }) => {
   await basicInit(page);
 
-  await page.getByRole("contentinfo").getByRole("link", { name: "About" }).click();
+  await page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "About" })
+    .click();
 
-  await expect(page.getByRole("heading", { name: "The secret sauce" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Our employees" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "The secret sauce" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Our employees" })
+  ).toBeVisible();
 });
 
 //Diner dashboard
@@ -433,7 +471,9 @@ test("Diner dashboard", async ({ page }) => {
   await expect(page.getByText("diner", { exact: true })).toBeVisible();
 
   // Order history from the fake backend
-  await expect(page.getByText("Here is your history of all the good times.")).toBeVisible();
+  await expect(
+    page.getByText("Here is your history of all the good times.")
+  ).toBeVisible();
   await expect(page.getByRole("cell", { name: "0.054 ₿" })).toBeVisible();
 });
 
@@ -487,9 +527,14 @@ test("Expired token logs the user out", async ({ page }) => {
 
 test("History page", async ({ page }) => {
   await basicInit(page);
-  await page.getByRole("contentinfo").getByRole("link", { name: "History" }).click();
+  await page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "History" })
+    .click();
 
-  await expect(page.getByRole("heading", { name: "Mama Rucci, my my" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Mama Rucci, my my" })
+  ).toBeVisible();
 });
 
 test("Not found page", async ({ page }) => {
@@ -503,7 +548,9 @@ test("Service docs", async ({ page }) => {
   await basicInit(page);
   await page.goto("/docs");
 
-  await expect(page.getByRole("heading", { name: "JWT Pizza API" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "JWT Pizza API" })
+  ).toBeVisible();
   await expect(page.getByText("[GET] /api/order/menu")).toBeVisible();
   await expect(page.getByText("[POST] /api/order")).toBeVisible();
 });
@@ -597,12 +644,18 @@ test("Admin closes a store, filters and pages franchises", async ({ page }) => {
   await expect(page.getByText("topSpot")).not.toBeVisible();
 
   // Close a store
-  await page.getByRole("row").filter({ hasText: "Spanish Fork" }).getByRole("button", { name: "Close" }).click();
+  await page
+    .getByRole("row")
+    .filter({ hasText: "Spanish Fork" })
+    .getByRole("button", { name: "Close" })
+    .click();
   await expect(page.getByText("Sorry to see you go")).toBeVisible();
   await expect(page.getByText("Spanish Fork")).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
 
-  await expect(page.getByRole("heading", { name: "Mama Ricci's kitchen" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Mama Ricci's kitchen" })
+  ).toBeVisible();
 });
 
 test("Admin sees a list of users", async ({ page }) => {
@@ -612,4 +665,55 @@ test("Admin sees a list of users", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
   await expect(page.getByText("d@jwt.com")).toBeVisible();
+});
+
+test("Admin filters users", async ({ page }) => {
+  await basicInit(page);
+  await login(page, "a@jwt.com", "admin");
+  await page.getByRole("link", { name: "Admin" }).click();
+  await expect(page.getByText("d@jwt.com")).toBeVisible();
+
+  await page.getByPlaceholder("Filter users").fill("kai");
+  await page.getByRole("button", { name: "Search users" }).click();
+
+  await expect(page.getByText("d@jwt.com")).toBeVisible();
+  await expect(page.getByText("f@jwt.com")).not.toBeVisible();
+});
+
+test("Admin pages through users", async ({ page }) => {
+  await basicInit(page);
+  // Override the user list so there are two pages
+  await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+    const pageNum = new URL(route.request().url()).searchParams.get("page");
+    if (pageNum === "2") {
+      await route.fulfill({ json: { users: [{ id: "21", name: "Second Page", email: "second@jwt.com", roles: [{ role: "diner" }] }], more: false } });
+    } else {
+      await route.fulfill({ json: { users: [{ id: "20", name: "First Page", email: "first@jwt.com", roles: [{ role: "diner" }] }], more: true } });
+    }
+  });
+  await login(page, "a@jwt.com", "admin");
+  await page.getByRole("link", { name: "Admin" }).click();
+
+  await expect(page.getByText("first@jwt.com")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Previous users page" })).toBeDisabled();
+
+  await page.getByRole("button", { name: "Next users page" }).click();
+  await expect(page.getByText("second@jwt.com")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Next users page" })).toBeDisabled();
+
+  await page.getByRole("button", { name: "Previous users page" }).click();
+  await expect(page.getByText("first@jwt.com")).toBeVisible();
+});
+
+test("Admin deletes a user", async ({ page }) => {
+  await basicInit(page);
+  await login(page, "a@jwt.com", "admin");
+  await page.getByRole("link", { name: "Admin" }).click();
+
+  const row = page.getByRole("row").filter({ hasText: "d@jwt.com" });
+  await expect(row).toBeVisible();
+  await row.getByRole("button", { name: "Delete" }).click();
+
+  await expect(page.getByText("d@jwt.com")).not.toBeVisible();
+  await expect(page.getByText("f@jwt.com")).toBeVisible();
 });

@@ -111,6 +111,7 @@ interface PizzaService {
   verifyOrder(jwt: string): Promise<JWTPayload>;
   getFranchise(user: User): Promise<Franchise[]>;
   getUsers(page: number, limit: number, nameFilter: string): Promise<UserList>;
+  deleteUser(user: User): Promise<void>;
   createFranchise(franchise: Franchise): Promise<Franchise>;
   getFranchises(page: number, limit: number, nameFilter: string): Promise<FranchiseList>;
   closeFranchise(franchise: Franchise): Promise<void>;
