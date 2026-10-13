@@ -76,6 +76,11 @@ type FranchiseList = {
   more: boolean;
 };
 
+type UserList = {
+  users: User[];
+  more: boolean;
+};
+
 type Endpoint = {
   requiresAuth: boolean;
   method: string;
@@ -105,6 +110,7 @@ interface PizzaService {
   order(order: Order): Promise<OrderResponse>;
   verifyOrder(jwt: string): Promise<JWTPayload>;
   getFranchise(user: User): Promise<Franchise[]>;
+  getUsers(page: number, limit: number, nameFilter: string): Promise<UserList>;
   createFranchise(franchise: Franchise): Promise<Franchise>;
   getFranchises(page: number, limit: number, nameFilter: string): Promise<FranchiseList>;
   closeFranchise(franchise: Franchise): Promise<void>;
@@ -113,4 +119,4 @@ interface PizzaService {
   docs(docType: string): Promise<Endpoints>;
 }
 
-export { Role, PizzaService, User, Menu, Pizza, OrderHistory, Order, Franchise, FranchiseList, Store, OrderItem, Endpoint, Endpoints, OrderResponse, JWTPayload };
+export { Role, PizzaService, User, UserList, Menu, Pizza, OrderHistory, Order, Franchise, FranchiseList, Store, OrderItem, Endpoint, Endpoints, OrderResponse, JWTPayload };

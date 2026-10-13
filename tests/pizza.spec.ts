@@ -109,7 +109,7 @@ async function basicInit(page: Page) {
     { id: 3, name: "PizzaCorp", stores: [{ id: 7, name: "Spanish Fork" }] },
     { id: 4, name: "topSpot", stores: [] },
   ];
-
+  
   await page.route(/\/api\/franchise(\?.*)?$/, async (route) => {
     const method = route.request().method();
 
@@ -131,6 +131,23 @@ async function basicInit(page: Page) {
     await route.fulfill({ json: { franchises: matching, more } });
   });
 
+    // List users (admin)
+    await page.route(/\/api\/user(\?.*)?$/, async (route) => {
+      expect(route.request().method()).toBe("GET");
+      const params = new URL(route.request().url()).searchParams;
+      const nameFilter = (params.get("name") ?? "*").replace(/\*/g, "").toLowerCase();
+      const page = Number(params.get("page") ?? 1);
+      const limit = Number(params.get("limit") ?? 10);
+  
+      const matching = Object.values(validUsers)
+        .filter((u) => (u.name ?? "").toLowerCase().includes(nameFilter))
+        .map(({ password, ...user }) => user); // never send passwords back
+  
+      const users = matching.slice((page - 1) * limit, page * limit);
+      const more = matching.length > page * limit;
+      await route.fulfill({ json: { users, more } });
+    });
+  
   const orders: any[] = [
     {
       id: 1,
@@ -586,4 +603,13 @@ test("Admin closes a store, filters and pages franchises", async ({ page }) => {
   await page.getByRole("button", { name: "Close" }).click();
 
   await expect(page.getByRole("heading", { name: "Mama Ricci's kitchen" })).toBeVisible();
+});
+
+test("Admin sees a list of users", async ({ page }) => {
+  await basicInit(page);
+  await login(page, "a@jwt.com", "admin");
+  await page.getByRole("link", { name: "Admin" }).click();
+
+  await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+  await expect(page.getByText("d@jwt.com")).toBeVisible();
 });
